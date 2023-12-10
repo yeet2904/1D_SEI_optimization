@@ -1,0 +1,21 @@
+# Test model for substituting charge and discharge phase double-layer capacitance  
+
+import pybamm 
+
+geometry = pybamm.Geometry("1D")
+    param = model.default_parameter_values
+    param.update({"Current function [A]": "[0.1] * 10"})
+    param.process_model(model)
+    experiment = pybamm.Experiment(
+        [
+            "Discharge at C/10 for 10 mins",
+            "Charge at C/10 for 10 mins",
+            "Discharge at 2C/10 for 15 mins",
+            "Charge at 2C/10 for 15 mins",
+        ]
+    )
+    sim = pybamm.Simulation(model, experiment=experiment, parameter_values=param)
+    sim.solve()
+    sim.plot()
+
+accelerated_testing_pouch_cell()

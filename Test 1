@@ -1,0 +1,28 @@
+# Test model for output parameter optimization
+
+import pybamm
+
+def optimize_battery_parameters():
+    model = pybamm.lithium_ion.DFN()
+    geometry = pybamm.battery_geometry.pouch_cell
+    parameter_values = pybamm.ParameterValues(chemistry=pybamm.parameter_sets.Chen2020)
+    simulation = pybamm.Simulation(model, parameter_values=parameter_values, geometry=geometry)
+
+    def objective_function(x):
+        parameter_values["Negative electrode diffusivity [m2.s-1]"] = x[0]
+        parameter_values["Positive electrode diffusivity [m2.s-1]"] = x[1]
+        parameter_values["Negative electrode conductivity [S.m-1]"] = x[2]
+        parameter_values["Positive electrode conductivity [S.m-1]"] = x[3]
+        parameter_values["Negative electrode capacity [A.h]"] = x[4]
+        parameter_values["Positive electrode capacity [A.h]"] = x[5]
+        simulation.solve()
+        degradation = simulation.solution["Battery degradation"]
+        return degradation
+
+    bounds = [(1e-15, 1e-10), (1e-15, 1e-10), (1e-5, 1e-1), (1e-5, 1e-1), (1, 10), (1, 10)]
+    result = pybamm.parameter_estimation.optimise(objective_function, bounds)
+
+    return result
+
+result = optimize_battery_parameters()
+print(result)
